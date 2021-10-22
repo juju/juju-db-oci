@@ -21,7 +21,7 @@ RUN cat snapstore.json | jq -j --arg risk "$SNAP_RISK" --arg track "$SNAP_TRACK"
 RUN curl $(cat download.url) -L -o juju-db.snap -s -H "Snap-Device-Series: 16"
 RUN unsquashfs juju-db.snap
 
-FROM $BASE_ARCH/ubuntu:18.04
+FROM $BASE_ARCH/ubuntu:20.04
 
 COPY --from=0 /root/squashfs-root /
 
