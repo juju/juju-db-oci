@@ -4,7 +4,7 @@ ARG SNAP_ARCH
 ARG SNAP_VERSION
 ARG BASE_ARCH
 
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 RUN apt-get update && apt-get install -y --no-install-recommends jq squashfs-tools curl ca-certificates
 
