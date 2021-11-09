@@ -1,4 +1,10 @@
 #!/bin/bash
+# crude check for qemu binfmt support for amd64/arm64/ppc64le/s390x
+which qemu-x86_64-static > /dev/null || (echo "qemu-x86_64-static missing" && exit 1)
+which qemu-aarch64-static > /dev/null || (echo "qemu-aarch64-static missing" && exit 1)
+which qemu-ppc64le-static > /dev/null || (echo "qemu-ppc64le-static missing" && exit 1)
+which qemu-s390x-static > /dev/null || (echo "qemu-s390x-static missing" && exit 1)
+
 set -eux
 
 # Arguments
