@@ -36,7 +36,7 @@ MANIFEST="${OPERATOR_IMAGE_ACCOUNT}/juju-db"
 # Pull base images
 docker pull "ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 docker pull "amd64/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
-docker pull "arm64/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
+docker pull "arm64v8/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 docker pull "ppc64le/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 docker pull "s390x/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 
