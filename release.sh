@@ -10,8 +10,8 @@ set -eux
 # Arguments
 OPERATOR_IMAGE_ACCOUNT=${OPERATOR_IMAGE_ACCOUNT:-jujusolutions}
 JUJUDB_SNAP_RISK=${JUJUDB_SNAP_RISK:-stable}
-JUJUDB_SNAP_TRACK=${JUJUDB_SNAP_TRACK:-5.0}
-JUJUDB_VERSION=${JUJUDB_VERSION:-5.0.3}
+JUJUDB_SNAP_TRACK=${JUJUDB_SNAP_TRACK:-5.3}
+JUJUDB_VERSION=${JUJUDB_VERSION:-5.3.1}
 JUJUDB_UBUNTU_RELEASE=${JUJUDB_UBUNTU_RELEASE:-20.04}
 
 if [ -z "${OPERATOR_IMAGE_ACCOUNT_PREFIX:-}" ]; then
@@ -34,14 +34,15 @@ IMAGE_S390X="${OPERATOR_IMAGE_ACCOUNT_PREFIX}s390x/juju-db"
 MANIFEST="${OPERATOR_IMAGE_ACCOUNT}/juju-db"
 
 # Pull base images
-docker pull "ubuntu:${JUJUDB_UBUNTU_RELEASE}"
+# docker pull "ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 docker pull "amd64/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 docker pull "arm64v8/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 docker pull "ppc64le/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 docker pull "s390x/ubuntu:${JUJUDB_UBUNTU_RELEASE}"
 
 # Build images
-docker build \
+docker buildx build \
+    --platform linux/amd64 \
     --build-arg "SNAP_ARCH=amd64" \
     --build-arg "BASE_ARCH=amd64" \
     --build-arg "SNAP_RISK=${JUJUDB_SNAP_RISK}" \
@@ -49,7 +50,8 @@ docker build \
     --build-arg "SNAP_VERSION=${JUJUDB_VERSION}" \
     --build-arg "UBUNTU_RELEASE=${JUJUDB_UBUNTU_RELEASE}" \
     -t "${IMAGE_AMD64}:${JUJUDB_VERSION}" -t "${IMAGE_AMD64}:${VERSION_MAJ_MIN}" .
-docker build \
+docker buildx build \
+    --platform linux/arm64v8 \
     --build-arg "SNAP_ARCH=arm64" \
     --build-arg "BASE_ARCH=arm64v8" \
     --build-arg "SNAP_RISK=${JUJUDB_SNAP_RISK}" \
@@ -57,7 +59,8 @@ docker build \
     --build-arg "SNAP_VERSION=${JUJUDB_VERSION}" \
     --build-arg "UBUNTU_RELEASE=${JUJUDB_UBUNTU_RELEASE}" \
     -t "${IMAGE_ARM64}:${JUJUDB_VERSION}" -t "${IMAGE_ARM64}:${VERSION_MAJ_MIN}" .
-docker build \
+docker buildx build \
+    --platform linux/ppc64le \
     --build-arg "SNAP_ARCH=ppc64el" \
     --build-arg "BASE_ARCH=ppc64le" \
     --build-arg "SNAP_RISK=${JUJUDB_SNAP_RISK}" \
@@ -65,7 +68,8 @@ docker build \
     --build-arg "SNAP_VERSION=${JUJUDB_VERSION}" \
     --build-arg "UBUNTU_RELEASE=${JUJUDB_UBUNTU_RELEASE}" \
     -t "${IMAGE_PPC64LE}:${JUJUDB_VERSION}" -t "${IMAGE_PPC64LE}:${VERSION_MAJ_MIN}" .
-docker build \
+docker buildx build \
+    --platform linux/s390x \
     --build-arg "SNAP_ARCH=s390x" \
     --build-arg "BASE_ARCH=s390x" \
     --build-arg "SNAP_RISK=${JUJUDB_SNAP_RISK}" \
