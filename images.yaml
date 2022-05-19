@@ -1,7 +1,7 @@
 images:
   juju-db-5.3:
     registry_paths:
-      - millerthomas/juju-db-2
+      - jujusolutions/juju-db
     tags:
       - 5.3
       - 5.3.1
@@ -18,7 +18,7 @@ images:
       - linux/s390x
   juju-db-4.4:
     registry_paths:
-      - millerthomas/juju-db-2
+      - jujusolutions/juju-db
     tags:
       - 4.4
       - 4.4.14
