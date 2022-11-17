@@ -58,12 +58,12 @@ jobs:
 
       - name: Install microk8s
         run: |
-          sudo snap install microk8s
+          sudo snap install microk8s --channel 1.25-strict/stable
 
       - name: Install juju snap
         run: |
           juju_test_channel=$(yq -o=t ".images.[\"${{ matrix.image }}\"].juju_test_channel" < images.yaml)
-          sudo snap install juju --channel=${juju_test_channel} || sudo snap install juju --channel=${juju_test_channel} --classic || sudo snap refresh juju --channel=${juju_test_channel}
+          sudo snap install juju --channel=${juju_test_channel} || sudo snap refresh juju --channel=${juju_test_channel}
           echo "installed juju $(juju version)"
 
       - name: Copy built image to microk8s.ctr
