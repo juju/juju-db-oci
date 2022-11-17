@@ -65,7 +65,7 @@ jobs:
           sudo snap install microk8s --channel 1.25-strict/stable
           sudo microk8s.enable storage dns
           sudo microk8s.status --wait-ready
-          sudo usermod -a -G snap_microk8s runner
+          sudo usermod -a -G microk8s $USER
 
       - name: Install juju snap
         run: |
