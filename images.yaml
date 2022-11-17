@@ -1,34 +1,18 @@
 images:
-  juju-db-5.3:
-    registry_paths:
-      - jujusolutions/juju-db
-    tags:
-      - 5.3
-      - 5.3.1
-      - latest
-    build_args:
-      - BASE_IMAGE=ubuntu:20.04
-      - SNAP_RISK=stable
-      - SNAP_TRACK=5.3
-      - SNAP_VERSION=5.3.1
-    platforms:
-      - linux/arm64
-      - linux/amd64
-      - linux/ppc64le
-      - linux/s390x
   juju-db-4.4:
     registry_paths:
       - jujusolutions/juju-db
     tags:
       - 4.4
-      - 4.4.14
+      - 4.4.18
     build_args:
       - BASE_IMAGE=ubuntu:20.04
       - SNAP_RISK=stable
       - SNAP_TRACK=4.4
-      - SNAP_VERSION=4.4.14
+      - SNAP_VERSION=4.4.18
     platforms:
       - linux/arm64
       - linux/amd64
       - linux/ppc64le
       - linux/s390x
+    juju_test_channel: 3.0/stable

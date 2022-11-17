@@ -1,0 +1,73 @@
+name: build
+on:
+  pull_request: {}
+  push:
+    branches:
+      - 'master'
+  schedule:
+    - cron: '15 0 * * *'
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix}}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y make jq
+          wget https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 -O /usr/bin/yq &&\
+          chmod +x /usr/bin/yq
+      - id: set-matrix
+        run: |
+          echo "::set-output name=matrix::{\"image\": $(make images-json)}"
+
+  release-docker-image:
+    needs: generate-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y make
+          wget https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 -O /usr/bin/yq &&\
+          chmod +x /usr/bin/yq
+
+      - name: Make build image ${{ matrix.image }}
+        run: |
+          IMAGES=${{ matrix.image }} make build
+
+      - name: Install microk8s
+        run: |
+          sudo snap install microk8s
+
+      - name: Install juju snap
+        run: |
+          juju_test_channel=$(yq -o=t ".images.[\"${{ matrix.image }}\"].juju_test_channel" < images.yaml)
+          sudo snap install juju --channel=${juju_test_channel} || sudo snap install juju --channel=${juju_test_channel} --classic || sudo snap refresh juju --channel=${juju_test_channel}
+          echo "installed juju $(juju version)"
+
+      - name: Copy built image to microk8s.ctr
+        run: |
+          IMAGES=${{ matrix.image }} make microk8s-import
+      
+      - name: Bootstrap juju into microk8s
+        run: |
+          juju bootstrap microk8s
+          juju status
+
+      # TODO: publish the image here.
+
