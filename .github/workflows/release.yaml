@@ -35,10 +35,10 @@ jobs:
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v1
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -62,7 +62,7 @@ jobs:
 
       - name: Install juju snap
         run: |
-          juju_test_channel=$(yq -o=t ".images.[\"${{ matrix.image }}\"].juju_test_channel" < images.yaml)
+          juju_test_channel=$(yq ".images.[\"${{ matrix.image }}\"].juju_test_channel" < images.yaml)
           sudo snap install juju --channel=${juju_test_channel} || sudo snap refresh juju --channel=${juju_test_channel}
           echo "installed juju $(juju version)"
 
