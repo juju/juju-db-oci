@@ -79,7 +79,9 @@ jobs:
 
       - name: Bootstrap juju into microk8s
         run: |
-          juju bootstrap microk8s
-          juju status
+          sg microk8s <<EOF
+            juju bootstrap microk8s
+            juju status
+          EOF
 
       # TODO: publish the image here.
