@@ -11,7 +11,7 @@ microk8s-import: .build-test $(patsubst %,.microk8s-import/%,$(IMAGES))
 .microk8s-import/%:
 	$(IMPORT_MICROK8S) "$(@:.microk8s-import/%=%)"
 .build-test: OUTPUT_TYPE=type=docker
-	IS_LOCAL=1
+.build-test: IS_LOCAL=1
 .build-test: $(IMAGES)
 
 build: OUTPUT_TYPE=type=image,push=false
