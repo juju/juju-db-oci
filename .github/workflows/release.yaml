@@ -3,9 +3,9 @@ on:
   pull_request: {}
   push:
     branches:
-      - 'master'
+      - "master"
   schedule:
-    - cron: '15 0 * * *'
+    - cron: "15 0 * * *"
 jobs:
   generate-matrix:
     runs-on: ubuntu-latest
@@ -14,12 +14,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y make jq
-          wget https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 -O /usr/bin/yq &&\
-          chmod +x /usr/bin/yq
+          wget https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 -O yq
+          chmod +x yq
+          sudo chown root:root yq
+          sudo mv yq /usr/bin/yq
+
       - id: set-matrix
         run: |
           echo "::set-output name=matrix::{\"image\": $(make images-json)}"
@@ -43,8 +47,10 @@ jobs:
         run: |
           sudo apt update
           sudo apt install -y make
-          wget https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 -O /usr/bin/yq &&\
-          chmod +x /usr/bin/yq
+          wget https://github.com/mikefarah/yq/releases/download/v4.20.1/yq_linux_amd64 -O yq
+          chmod +x yq
+          sudo chown root:root yq
+          sudo mv yq /usr/bin/yq
 
       - name: Make build image ${{ matrix.image }}
         run: |
@@ -63,11 +69,10 @@ jobs:
       - name: Copy built image to microk8s.ctr
         run: |
           IMAGES=${{ matrix.image }} make microk8s-import
-      
+
       - name: Bootstrap juju into microk8s
         run: |
           juju bootstrap microk8s
           juju status
 
       # TODO: publish the image here.
-
