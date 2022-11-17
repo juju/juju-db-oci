@@ -56,15 +56,16 @@ jobs:
           sudo chown root:root yq
           sudo mv yq /usr/bin/yq
 
-      - name: Make build image ${{ matrix.image }}
-        run: |
-          IMAGES=${{ matrix.image }} make build
+      #- name: Make build image ${{ matrix.image }}
+      #  run: |
+      #    IMAGES=${{ matrix.image }} make build
 
       - name: Install microk8s
         run: |
           sudo snap install microk8s --channel 1.25-strict/stable
           sudo microk8s.enable storage dns
           sudo microk8s.status --wait-ready
+          sudo usermod -a -G snap_microk8s runner
 
       - name: Install juju snap
         run: |
