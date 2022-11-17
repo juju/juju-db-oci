@@ -59,6 +59,8 @@ jobs:
       - name: Install microk8s
         run: |
           sudo snap install microk8s --channel 1.25-strict/stable
+          microk8s.enable storage dns
+          microk8s.status --wait-ready
 
       - name: Install juju snap
         run: |
