@@ -60,7 +60,7 @@ build_image() {
     -f "$dockerfile" . ${cmd_tags} -o "$output" --progress=auto
 }
 
-import_microk8s() {
+microk8s_image_update() {
   image=${1-""}
   if [ -z "$image" ]; then
     echo "You must supply the image to build in images.yaml"

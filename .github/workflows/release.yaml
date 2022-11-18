@@ -1,6 +1,5 @@
 name: build
 on:
-  pull_request: {}
   push:
     branches:
       - "master"
@@ -56,9 +55,9 @@ jobs:
           sudo chown root:root yq
           sudo mv yq /usr/bin/yq
 
-      #- name: Make build image ${{ matrix.image }}
-      #  run: |
-      #    IMAGES=${{ matrix.image }} make build
+      - name: Make build image ${{ matrix.image }}
+        run: |
+          IMAGES=${{ matrix.image }} make build
 
       - name: Install microk8s
         run: |
@@ -76,16 +75,16 @@ jobs:
 
       - name: Copy built image to microk8s.ctr
         run: |
-          IMAGES=${{ matrix.image }} make microk8s-import
+          IMAGES=${{ matrix.image }} make microk8s-image-update
 
       - name: Bootstrap juju into microk8s
         run: |
           sg snap_microk8s <<EOF
             juju bootstrap microk8s
             juju status -m controller
-            image_tag=$(microk8s.kubectl -n controller-microk8s-localhost get pod controller-0 -o json | jq -r '.status.containerStatuses | map(select(.name=="mongodb"))[0].image')
-            expected_image_id=$(docker inspect ${image_tag} --format {{.ID}})
-            got_image_id=$(microk8s.kubectl -n controller-microk8s-localhost get pod controller-0 -o json | jq -r '.status.containerStatuses | map(select(.name=="mongodb"))[0].imageID')
+            image_tag="$(microk8s.kubectl -n controller-microk8s-localhost get pod controller-0 -o json | jq -r '.status.containerStatuses | map(select(.name=="mongodb"))[0].image')"
+            expected_image_id="$(docker inspect ${image_tag} --format {{.ID}})"
+            got_image_id="$(microk8s.kubectl -n controller-microk8s-localhost get pod controller-0 -o json | jq -r '.status.containerStatuses | map(select(.name=="mongodb"))[0].imageID')"
             echo "image ${image_tag} built as ${expected_image_id}"
             echo "image ${image_tag} used as ${got_image_id}"
             if [ "${expected_image_id}" != "${got_image_id}" ]; then
@@ -93,5 +92,14 @@ jobs:
               exit 1
             fi
           EOF
+      
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # TODO: publish the image here.
+      - name: Push images
+        if: ${{ success() && github.ref == 'refs/heads/master' }}
+        run: |
+          IMAGES=${{ matrix.image }} make push
