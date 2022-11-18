@@ -82,7 +82,16 @@ jobs:
         run: |
           sg snap_microk8s <<EOF
             juju bootstrap microk8s
-            juju status
+            juju status -m controller
+            image_tag=$(microk8s.kubectl -n controller-microk8s-localhost get pod controller-0 -o json | jq -r '.status.containerStatuses | map(select(.name=="mongodb"))[0].image')
+            expected_image_id=$(docker inspect ${image_tag} --format {{.ID}})
+            got_image_id=$(microk8s.kubectl -n controller-microk8s-localhost get pod controller-0 -o json | jq -r '.status.containerStatuses | map(select(.name=="mongodb"))[0].imageID')
+            echo "image ${image_tag} built as ${expected_image_id}"
+            echo "image ${image_tag} used as ${got_image_id}"
+            if [ "${expected_image_id}" != "${got_image_id}" ]; then
+              echo "${got_image_id} does not match expected ${expected_image_id}"
+              exit 1
+            fi
           EOF
 
       # TODO: publish the image here.
