@@ -80,7 +80,7 @@ jobs:
 
       - name: Bootstrap juju into microk8s
         run: |
-          sg snap_microk8s <<EOF
+          sg snap_microk8s <<'EOF'
             juju bootstrap microk8s
             juju status -m controller
             image_tag="$(microk8s.kubectl -n controller-microk8s-localhost get pod controller-0 -o json | jq -r '.status.containerStatuses | map(select(.name=="mongodb"))[0].image')"
