@@ -2,16 +2,16 @@
 # Licensed under the AGPLv3, see LICENCE file for details.
 
 BUILD_IMAGE=bash -c '. "./make_functions.sh"; build_image "$$@"' build_image
-IMPORT_MICROK8S=bash -c '. "./make_functions.sh"; import_microk8s "$$@"' import_microk8s
+MICROK8S_IMAGE_UPDATE=bash -c '. "./make_functions.sh"; microk8s_image_update "$$@"' microk8s_image_update
 IMAGES?=$(shell yq -o=t '.images | keys' < images.yaml)
 
 default: build
 
-microk8s-import: .build-test $(patsubst %,.microk8s-import/%,$(IMAGES))
-.microk8s-import/%:
-	$(IMPORT_MICROK8S) "$(@:.microk8s-import/%=%)"
+microk8s-image-update: .build-test $(patsubst %,.microk8s-image-update/%,$(IMAGES))
+.microk8s-image-update/%:
+	$(MICROK8S_IMAGE_UPDATE) "$(@:.microk8s-image-update/%=%)"
 .build-test: OUTPUT_TYPE=type=docker
-	IS_LOCAL=1
+.build-test: IS_LOCAL=1
 .build-test: $(IMAGES)
 
 build: OUTPUT_TYPE=type=image,push=false
@@ -31,9 +31,9 @@ push: $(IMAGES)
 
 .PHONY: default
 .PHONY: build
-.PHONY: microk8s-import
+.PHONY: microk8s-image-update
 .PHONY: .build-test
-.PHONY: .microk8s-import/%
+.PHONY: .microk8s-image-update/%
 .PHONY: check
 .PHONY: push
 .PHONY: %

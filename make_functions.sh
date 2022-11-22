@@ -51,7 +51,7 @@ build_image() {
   if [[ "${is_local}" -eq 1 ]]; then
     cmd_platforms=""
   else
-    cmd_platforms="--platform \"${platforms}\""
+    cmd_platforms="--platform ${platforms}"
   fi
 
   echo "Building ${image} for build args \"$build_args\" and platforms \"$platforms\""
@@ -60,7 +60,7 @@ build_image() {
     -f "$dockerfile" . ${cmd_tags} -o "$output" --progress=auto
 }
 
-import_microk8s() {
+microk8s_image_update() {
   image=${1-""}
   if [ -z "$image" ]; then
     echo "You must supply the image to build in images.yaml"
@@ -70,7 +70,7 @@ import_microk8s() {
   tags=$(yq -o=c ".images.[\"${image}\"].tags" < images.yaml)
   for reg_path in ${reg_paths//,/ }; do
     for tag in ${tags//,/ }; do
-      docker save "${reg_path}:${tag}" | microk8s.ctr --namespace k8s.io image import -
+      docker save "${reg_path}:${tag}" | sudo microk8s.ctr --namespace k8s.io image import -
     done
   done
 }
