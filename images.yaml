@@ -15,4 +15,4 @@ images:
       - linux/amd64
       - linux/ppc64le
       - linux/s390x
-    juju_test_channel: 3.0/stable
+    juju_test_channel: 3.1/stable
