@@ -1,15 +1,33 @@
 images:
   juju-db-4.4:
     registry_paths:
-      - jujusolutions/juju-db
+      - docker.io/jujusolutions/juju-db
+      - public.ecr.aws/juju/juju-db
     tags:
       - 4.4
       - 4.4.18
     build_args:
-      - BASE_IMAGE=ubuntu:20.04
+      - BASE_IMAGE=public.ecr.aws/ubuntu/ubuntu:20.04
       - SNAP_RISK=stable
       - SNAP_TRACK=4.4
       - SNAP_VERSION=4.4.18
+    platforms:
+      - linux/arm64
+      - linux/amd64
+      - linux/ppc64le
+      - linux/s390x
+    juju_test_channel: 3.1/stable
+  juju-db-4.4-next:
+    registry_paths:
+      - docker.io/jujusolutions/juju-db
+      - public.ecr.aws/juju/juju-db
+    tags:
+      - 4.4.24
+    build_args:
+      - BASE_IMAGE=public.ecr.aws/ubuntu/ubuntu:20.04
+      - SNAP_RISK=candidate
+      - SNAP_TRACK=4.4
+      - SNAP_VERSION=4.4.24
     platforms:
       - linux/arm64
       - linux/amd64

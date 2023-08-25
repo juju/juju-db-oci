@@ -55,9 +55,9 @@ build_image() {
   fi
 
   echo "Building ${image} for build args \"$build_args\" and platforms \"$platforms\""
-  echo ${cmd_platforms}
-  docker buildx build ${cmd_platforms} ${cmd_build_args} \
-    -f "$dockerfile" . ${cmd_tags} -o "$output" --progress=auto
+  BUILDX_NO_DEFAULT_ATTESTATIONS=true DOCKER_BUILDKIT=1 docker buildx build ${cmd_platforms} ${cmd_build_args} \
+    -f "$dockerfile" . ${cmd_tags} -o "$output" --progress=auto \
+    --provenance=false
 }
 
 microk8s_image_update() {
