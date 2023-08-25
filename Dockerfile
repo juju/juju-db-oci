@@ -27,6 +27,8 @@ RUN cp -R /squashfs-root/bin/* /bin \
 && rm -Rf /squashfs-root \
 && apt-get update \
 && apt-get install -y libsqlite3-0 libgssapi-krb5-2 \
-&& rm -rf /var/lib/apt/lists/*
+&& rm -rf /var/lib/apt/lists/* \
+&& groupadd --gid 170 juju \
+&& useradd --home-dir /var/lib/juju --shell /usr/sbin/nologin --no-create-home --uid 170 --gid 170 juju
 
 ENTRYPOINT [ /bin/mongod ]
