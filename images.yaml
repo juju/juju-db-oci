@@ -6,6 +6,7 @@ images:
     tags:
       - 4.4
       - 4.4.18
+    test_tag: 4.4
     build_args:
       - BASE_IMAGE=public.ecr.aws/ubuntu/ubuntu:20.04
       - SNAP_RISK=stable
@@ -23,6 +24,7 @@ images:
       - public.ecr.aws/juju/juju-db
     tags:
       - 4.4.24
+    test_tag: 4.4
     build_args:
       - BASE_IMAGE=public.ecr.aws/ubuntu/ubuntu:20.04
       - SNAP_RISK=candidate
