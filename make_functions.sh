@@ -68,9 +68,13 @@ microk8s_image_update() {
   fi
   reg_paths=$(yq -o=c ".images.[\"${image}\"].registry_paths" < images.yaml)
   tags=$(yq -o=c ".images.[\"${image}\"].tags" < images.yaml)
+  test_tag=$(yq ".images.[\"${image}\"].test_tag" < images.yaml)
   for reg_path in ${reg_paths//,/ }; do
     for tag in ${tags//,/ }; do
+      last_tag=${tag}
       docker save "${reg_path}:${tag}" | sudo microk8s.ctr --namespace k8s.io image import -
     done
+    docker tag "${reg_path}:${last_tag}" "${reg_path}:${test_tag}"
+    docker save "${reg_path}:${test_tag}" | sudo microk8s.ctr --namespace k8s.io image import -
   done
 }
