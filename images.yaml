@@ -3,6 +3,7 @@ images:
     registry_paths:
       - docker.io/jujusolutions/juju-db
       - public.ecr.aws/juju/juju-db
+      - ghcr.io/juju/juju-db
     tags:
       - 4.4
       - 4.4.18
@@ -22,6 +23,7 @@ images:
     registry_paths:
       - docker.io/jujusolutions/juju-db
       - public.ecr.aws/juju/juju-db
+      - ghcr.io/juju/juju-db
     tags:
       - 4.4.24
     test_tag: 4.4
