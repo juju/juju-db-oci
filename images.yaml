@@ -5,36 +5,16 @@ images:
       - public.ecr.aws/juju/juju-db
       - ghcr.io/juju/juju-db
     tags:
-      - 4.4
-      - 4.4.18
-    test_tag: 4.4
+      - 4.4.30
+    test_tag: 4.4.30
     build_args:
       - BASE_IMAGE=public.ecr.aws/ubuntu/ubuntu:20.04
       - SNAP_RISK=stable
-      - SNAP_TRACK=4.4
-      - SNAP_VERSION=4.4.18
+      - SNAP_TRACK=4.4.30
+      - SNAP_VERSION=4.4.30
     platforms:
       - linux/arm64
       - linux/amd64
       - linux/ppc64le
       - linux/s390x
-    juju_test_channel: 3.1/stable
-  juju-db-4.4-next:
-    registry_paths:
-      - docker.io/jujusolutions/juju-db
-      - public.ecr.aws/juju/juju-db
-      - ghcr.io/juju/juju-db
-    tags:
-      - 4.4.24
-    test_tag: 4.4
-    build_args:
-      - BASE_IMAGE=public.ecr.aws/ubuntu/ubuntu:20.04
-      - SNAP_RISK=candidate
-      - SNAP_TRACK=4.4
-      - SNAP_VERSION=4.4.24
-    platforms:
-      - linux/arm64
-      - linux/amd64
-      - linux/ppc64le
-      - linux/s390x
-    juju_test_channel: 3.1/stable
+    juju_test_channel: 3.6/stable

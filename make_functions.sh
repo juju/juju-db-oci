@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euf
 
+OCI_BUILDER=$( (which podman 2>&1 > /dev/null && echo podman) || echo docker )
+DOCKER_BIN=${DOCKER_BIN:-$(which ${OCI_BUILDER} || true)}
+DEFAULT_PLATFORM=${PLATFORM:-"linux/amd64"}
+
 _build_args_builder() {
   build_args=$1
 
@@ -12,15 +16,27 @@ _build_args_builder() {
   echo "$output"
 }
 
-_tag_argument_builder() {
+_image_path_list_builder() {
   reg_paths=$1
   tags=$2
 
   output=""
   for reg_path in ${reg_paths//,/ }; do
     for tag in ${tags//,/ }; do
-      output="${output} -t ${reg_path}:${tag}"
+      output="${output} ${reg_path}:${tag}"
     done
+  done
+
+  echo "$output"
+}
+
+_image_path_tag_builder() {
+  image_paths=$1
+  tag=$2
+
+  output=""
+  for image_path in ${image_paths}; do
+    output="${output} ${tag} ${image_path}"
   done
 
   echo "$output"
@@ -45,19 +61,51 @@ build_image() {
   platforms=$(yq -o=c ".images.[\"${image}\"].platforms" < images.yaml)
   build_args=$(yq -o=t ".images.[\"${image}\"].build_args" < images.yaml)
 
-  cmd_build_args=$(_build_args_builder "$build_args")
-  cmd_tags=$(_tag_argument_builder "$reg_paths" "$tags")
+  image_paths=$(_image_path_list_builder "$reg_paths" "$tags")
 
   if [[ "${is_local}" -eq 1 ]]; then
-    cmd_platforms=""
-  else
-    cmd_platforms="--platform ${platforms}"
+    platforms="${DEFAULT_PLATFORM}"
   fi
 
-  echo "Building ${image} for build args \"$build_args\" and platforms \"$platforms\""
-  BUILDX_NO_DEFAULT_ATTESTATIONS=true DOCKER_BUILDKIT=1 docker buildx build ${cmd_platforms} ${cmd_build_args} \
-    -f "$dockerfile" . ${cmd_tags} -o "$output" --progress=auto \
-    --provenance=false
+  echo "Building ${image_paths} for platforms \"$platforms\""
+
+  build_dir="."
+  cmd_build_args=$(_build_args_builder "$build_args")
+  cmd_platforms="--platform ${platforms}"
+
+  if [[ "${OCI_BUILDER}" = "docker" ]]; then
+      repo_image_tags=$(_image_path_tag_builder "${image_paths}" "-t")
+      echo BUILDX_NO_DEFAULT_ATTESTATIONS=true DOCKER_BUILDKIT=1 "$DOCKER_BIN" buildx build \
+          -f "$dockerfile" \
+          ${repo_image_tags} \
+          ${cmd_platforms} \
+          --provenance=false \
+          --progress=auto \
+          -o "${output}" \
+          "${build_dir}"
+  elif [[ "${OCI_BUILDER}" = "podman" ]]; then
+      for image_path in ${image_paths}; do
+        "$DOCKER_BIN" manifest rm "${image_path}" || true
+        "$DOCKER_BIN" manifest create "${image_path}"
+      done
+      repo_image_tags=$(_image_path_tag_builder "${image_paths}" "--manifest")
+      "$DOCKER_BIN" build \
+          --jobs "4" \
+          -f "$dockerfile" \
+          ${repo_image_tags} \
+          ${cmd_platforms} \
+          ${cmd_build_args} \
+          "${build_dir}"
+      if [[ "${output}" == *"push=true"* ]]; then
+          for image_path in ${image_paths}; do
+            echo "Pushing ${image_path}"
+            "$DOCKER_BIN" manifest push -f v2s2 "${image_path}" "docker://${image_path}"
+          done
+      fi
+  else
+      echo "unknown OCI_BUILDER=${OCI_BUILDER} expected docker or podman"
+      exit 1
+  fi
 }
 
 microk8s_image_update() {
