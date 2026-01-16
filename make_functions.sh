@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euf
 
-OCI_BUILDER=$( (which podman 2>&1 > /dev/null && echo podman) || echo docker )
+OCI_BUILDER=${OCI_BUILDER:-( (which podman 2>&1 > /dev/null && echo podman) || echo docker )}
 DOCKER_BIN=${DOCKER_BIN:-$(which ${OCI_BUILDER} || true)}
 DEFAULT_PLATFORM=${PLATFORM:-"linux/amd64"}
 
@@ -43,6 +43,10 @@ _image_path_tag_builder() {
 }
 
 build_image() {
+  if [ -z "$DOCKER_BIN" ]; then
+    echo "No valid docker executable was found"
+    exit 1
+  fi
   image=${1-""}
   if [ -z "$image" ]; then
     echo "You must supply the image to build in images.yaml"
@@ -75,10 +79,11 @@ build_image() {
 
   if [[ "${OCI_BUILDER}" = "docker" ]]; then
       repo_image_tags=$(_image_path_tag_builder "${image_paths}" "-t")
-      echo BUILDX_NO_DEFAULT_ATTESTATIONS=true DOCKER_BUILDKIT=1 "$DOCKER_BIN" buildx build \
+      BUILDX_NO_DEFAULT_ATTESTATIONS=true DOCKER_BUILDKIT=1 "$DOCKER_BIN" buildx build \
           -f "$dockerfile" \
           ${repo_image_tags} \
           ${cmd_platforms} \
+          ${cmd_build_args} \
           --provenance=false \
           --progress=auto \
           -o "${output}" \
@@ -87,15 +92,14 @@ build_image() {
       for image_path in ${image_paths}; do
         "$DOCKER_BIN" manifest rm "${image_path}" || true
         "$DOCKER_BIN" manifest create "${image_path}"
+        "$DOCKER_BIN" build \
+            --jobs "4" \
+            -f "$dockerfile" \
+            --manifest "${image_path}" \
+            ${cmd_platforms} \
+            ${cmd_build_args} \
+            "${build_dir}"
       done
-      repo_image_tags=$(_image_path_tag_builder "${image_paths}" "--manifest")
-      "$DOCKER_BIN" build \
-          --jobs "4" \
-          -f "$dockerfile" \
-          ${repo_image_tags} \
-          ${cmd_platforms} \
-          ${cmd_build_args} \
-          "${build_dir}"
       if [[ "${output}" == *"push=true"* ]]; then
           for image_path in ${image_paths}; do
             echo "Pushing ${image_path}"
