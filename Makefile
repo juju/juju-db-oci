@@ -4,6 +4,7 @@
 BUILD_IMAGE=bash -c '. "./make_functions.sh"; build_image "$$@"' build_image
 MICROK8S_IMAGE_UPDATE=bash -c '. "./make_functions.sh"; microk8s_image_update "$$@"' microk8s_image_update
 IMAGES?=$(shell yq -o=t '.images | keys' < images.yaml)
+export OCI_BUILDER=docker
 
 default: build
 
