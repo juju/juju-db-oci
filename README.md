@@ -5,7 +5,7 @@
 Find the name of the image in images.yaml
 
 ```sh
-IMAGES=juju-db-5.3 make build
+IMAGES=juju-db-4.4 make build
 ```
 
 ## To push a specific image
@@ -13,7 +13,7 @@ IMAGES=juju-db-5.3 make build
 Find the name of the image in images.yaml
 
 ```sh
-IMAGES=juju-db-5.3 make push
+IMAGES=juju-db-4.4 make push
 ```
 
 ## To build all images
