@@ -28,7 +28,10 @@ jobs:
         run: |
           echo "::set-output name=matrix::{\"image\": $(make images-json)}"
 
-  release-docker-image:
+  check-docker-image:
+    # TODO - this won't work until juju 3.6 is updated
+    # we need the new images to release juju
+    if: false
     needs: generate-matrix
     runs-on: ubuntu-latest
     strategy:
@@ -80,9 +83,6 @@ jobs:
 
       - name: Bootstrap juju into microk8s
         run: |
-          # TODO - this won't work until juju 3.6 is updated
-          # we need the new images to release juju
-          exit 0
           sg snap_microk8s <<'EOF'
             juju bootstrap microk8s
             juju status -m controller
@@ -96,7 +96,15 @@ jobs:
               exit 1
             fi
           EOF
-      
+
+  release-docker-image:
+    needs: [generate-matrix, check-docker-image]
+    # TODO remove always() once check-docker-image is able to be run
+    if: ${{ always() && github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    steps:
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -118,6 +126,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push images
-        if: ${{ success() && github.ref == 'refs/heads/master' }}
+        if: ${{ success() }}
         run: |
           IMAGES=${{ matrix.image }} make push
